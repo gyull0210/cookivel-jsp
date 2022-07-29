@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.book.viewer.BookViewerCommentMapper">
+<select id="getCommentListByPaging" resultType="com.gyull.cookivel.domain.book.BookCommentVO">
+SELECT bc_idx, a.member_idx, b.mem_nickName, c.mem_imgThumbUrl, book_idx, chapter_idx, bc_comment, bc_regDate, bc_parent, bc_depth, bc_regGroup, bc_likes, bc_nestedCount
+FROM book_comment a
+INNER JOIN member b
+on b.member_idx = a.member_idx
+LEFT OUTER JOIN member_image c
+on b.member_idx = c.member_idx
+WHERE book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+ORDER BY bc_regGroup desc, IF(bc_parent=0, bc_idx, bc_depth=0) desc, bc_depth, bc_idx;
+</select>
+<select id="totalCommentCount">
+SELECT count(*)
+FROM book_comment
+WHERE book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+</select>
+<insert id="insert">
+INSERT INTO book_comment(member_idx, book_idx, chapter_idx, mem_nickName, bc_comment, bc_regDate, bc_regGroup)
+VALUES(#{member_idx}, #{book_idx}, #{chapter_idx}, #{mem_nickName}, #{bc_comment}, now(), now())
+</insert>
+<insert id="insertNested">
+INSERT INTO book_comment(member_idx, book_idx, chapter_idx, mem_nickName, bc_comment, bc_regDate, bc_parent, bc_depth, bc_regGroup)
+VALUES(#{member_idx}, #{book_idx}, #{chapter_idx}, #{mem_nickName}, #{bc_comment}, now(), #{bc_parent}, 1, #{bc_regGroup})
+</insert>
+<update id="remove">
+UPDATE book_comment
+SET
+bc_comment = ""
+WHERE bc_idx = #{bc_idx} and member_idx =  #{member_idx}
+</update>
+<delete id="removeNested">
+DELETE book_comment
+WHERE bc_idx = #{bc_idx} and member_idx = #{member_idx} and bc_depth = 1
+</delete>
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.book.viewer.BookViewerRatingMapper">
+<update id="updateChapterRating">
+UPDATE book_chapter
+SET 
+chapter_rating = (SELECT AVG(chapter_rate) FROM book_rating WHERE book_idx = #{book_idx} and chapter_idx = #{chapter_idx})
+WHERE chapter_idx = #{chapter_idx}
+</update>
+<update id="rateCount">
+SELECT count(*)
+FROM book_rating
+WHERE book_chapter = #{chapter_idx}
+</update>
+<select id="readRating" resultType="com.gyull.cookivel.domain.book.BookRatingVO">
+SELECT member_idx, book_idx, chapter_idx, chapter_rate, br_regDate
+FROM book_rating
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+</select>
+<insert id="rating">
+INSERT INTO book_rating(member_idx, book_idx, chapter_idx, chapter_rate, br_regDate)
+VALUES(#{member_idx}, #{book_idx}, #{chapter_idx}, #{chapter_rate}, now())
+</insert>
+<update id="updateRating">
+UPDATE book_rating
+SET 
+chapter_rate = #{chapter_rate}
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+</update>
+</mapper>

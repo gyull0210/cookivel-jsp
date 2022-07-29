@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.storyroom.chapter.StoryChapterMapper">
+<select id="bookInfo" resultType="com.gyull.cookivel.domain.book.BookVO">
+SELECT book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_state, book_recentDate, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgthumbUrl, book_imgUuid 
+FROM book
+WHERE book_idx = #{book_idx}
+</select>
+<select id="totalCount" resultType="int">
+select count(*)
+from book_chapter
+where member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_category = '연재' and chapter_idx > 0
+</select>
+<select id="totalNoticeCount" resultType="int">
+select count(*)
+from book_chapter
+where member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_category = '공지' and chapter_idx > 0
+</select>
+<select id="pagination" resultType="com.gyull.cookivel.domain.book.BookChapterVO">
+<![CDATA[
+SELECT chapter_idx, member_idx, book_idx, book_title, chapter_category, chapter_title, chapter_content, chapter_regDate, chapter_recentDate, chapter_views, chapter_rating, chapter_comments, chapter_isHidden
+FROM book_chapter
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_category = '연재'
+ORDER BY chapter_regDate DESC
+limit #{skip}, #{amount};
+]]>
+</select>
+<select id="noticePagination" resultType="com.gyull.cookivel.domain.book.BookChapterVO">
+<![CDATA[
+SELECT chapter_idx, book_title, chapter_category, chapter_title, chapter_content, chapter_regDate, chapter_recentDate, chapter_views, chapter_rating, chapter_comments, chapter_isHidden
+FROM book_chapter
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_category = '공지'
+ORDER BY chapter_recentDate DESC
+limit #{skip}, #{amount};
+]]>
+</select>
+<insert id="create">
+INSERT INTO book_chapter(member_idx, book_idx, book_title, chapter_category, chapter_title, chapter_content, chapter_regDate, chapter_recentDate, chapter_isHidden)
+VALUES(#{member_idx}, #{book_idx}, #{book_title}, #{chapter_category}, #{chapter_title}, #{chapter_content}, now(), now(), #{chapter_isHidden})
+</insert>
+<select id="read" resultType="com.gyull.cookivel.domain.book.BookChapterVO">
+SELECT chapter_idx, book_title, chapter_category, chapter_title, chapter_content, chapter_regDate, chapter_recentDate, chapter_views, chapter_rating, chapter_comments, chapter_isHidden
+FROM book_chapter 
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+</select>
+<update id="modify">
+UPDATE book_chapter
+SET
+chapter_category = #{chapter_category},
+chapter_title = #{chapter_title},
+chapter_content = #{chapter_content},
+chapter_recentDate = #{chapter_recentDate},
+chapter_isHidden = #{chapter_isHidden}
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+</update>
+<delete id="delete">
+DELETE FROM book_chapter
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+</delete>
+</mapper>

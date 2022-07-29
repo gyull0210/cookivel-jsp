@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.book.viewer.BookViewerMapper">
+<select id="readChapter" resultType="com.gyull.cookivel.domain.book.BookChapterVO">
+SELECT chapter_idx, book_idx, book_title, chapter_category, chapter_title, chapter_content, chapter_rating, chapter_comments,
+(SELECT chapter_idx FROM book_chapter WHERE book_idx = #{book_idx} and chapter_category = '연재' and <![CDATA[chapter_idx < #{chapter_idx}]]> ORDER BY chapter_idx DESC LIMIT 1) 'prev'
+,(SELECT chapter_idx FROM book_chapter WHERE book_idx = #{book_idx} and chapter_category = '연재' and <![CDATA[chapter_idx > #{chapter_idx}]]> ORDER BY chapter_idx ASC LIMIT 1) 'next'
+FROM book_chapter 
+WHERE book_idx = #{book_idx} and chapter_category = '연재' and chapter_idx = #{chapter_idx};
+</select>
+<select id="chapterList" resultType="com.gyull.cookivel.domain.book.BookChapterVO">
+<![CDATA[
+SELECT chapter_idx, book_idx, book_title, chapter_category, chapter_title, chapter_regDate, chapter_views, chapter_rating, chapter_comments
+FROM book_chapter
+WHERE book_idx = #{book_idx} and chapter_category = '연재'
+ORDER BY chapter_regDate desc
+]]>
+</select>
+<update id="views">
+UPDATE book_chapter
+SET
+chapter_views = chapter_views + 1
+WHERE chapter_idx = #{chapter_idx}
+</update>
+<insert id="insertViews">
+INSERT INTO book_chapter_views (book_idx, chapter_idx, member_idx, ip, view_regDate)
+VALUES(#{book_idx}, #{chapter_idx}, #{member_idx}, #{ip}, now())
+</insert>
+<select id="getViews" resultType="com.gyull.cookivel.domain.book.ChapterViewVO">
+SELECT member_idx, book_idx, chapter_idx, ip
+FROM book_chapter_views
+WHERE book_idx = #{book_idx} and chapter_idx = #{chapter_idx}
+<if test="member_idx != null">
+and member_idx = #{member_idx}
+</if>
+<if test="member_idx == null">
+and ip = #{ip}
+</if>
+</select>
+<update id="updateChapterRating">
+UPDATE book_chapter
+SET
+chapter_rating = (SELECT AVG(chapter_rate) FROM book_rating WHERE book_idx = #{book_idx} and chapter_idx = #{chapter_idx})
+WHERE chapter_idx = #{chapter_idx}
+</update>
+<update id="rateCount">
+SELECT count(*)
+FROM book_rating
+WHERE book_chapter = #{chapter_idx}
+</update>
+<insert id="bookRating">
+INSERT INTO book_rating(member_idx, book_idx, chapter_idx, now(), chapter_rate)
+VALUES(#{member_idx}, #{book_idx}, #{chapter_idx}, now(), #{chapter_idx})
+</insert>
+<update id="updateRating">
+UPDATE book_rating
+SET
+chapter_rate = #{chapter_rate}
+WHERE member_idx = #{member_idx} and chapter_idx = #{chapter_idx}
+</update>
+</mapper>

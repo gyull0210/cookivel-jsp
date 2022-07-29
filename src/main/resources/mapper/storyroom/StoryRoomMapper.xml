@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.storyroom.StoryRoomMapper">
+<select id="totalCount" resultType="int">
+select count(*)
+from book
+where book_idx > 0 and member_idx = #{member_idx} and book_state = '연재중'
+</select>
+<select id="totalCountFinished" resultType="int">
+select count(*)
+from book
+where book_idx > 0 and member_idx = #{member_idx} and book_state = '완결됨'
+</select>
+<select id="pagination" resultType="com.gyull.cookivel.domain.book.BookVO">
+<![CDATA[
+SELECT book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_regDate, book_recentDate, book_state, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgThumbUrl, book_imgUuid
+FROM book
+WHERE member_idx = #{member_idx} and book_state = '연재중'
+ORDER BY book_recentDate DESC
+limit #{skip}, #{amount};
+]]>
+</select>
+<select id="paginationFinished" resultType="com.gyull.cookivel.domain.book.BookVO">
+<![CDATA[
+SELECT book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_regDate, book_recentDate, book_state, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgThumbUrl, book_imgUuid
+FROM book
+WHERE member_idx = #{member_idx} and book_state = '완결됨'
+ORDER BY book_recentDate DESC
+limit #{skip}, #{amount};
+]]>
+</select>
+<insert id="create">
+INSERT INTO book(member_idx, book_title, book_writer, book_genre, book_writeType, book_intro, book_state, book_isHidden, book_regDate, book_imgName, book_imgUrl, book_imgThumbUrl, book_imgUuid)
+VALUES(#{member_idx}, #{book_title}, #{book_writer}, #{book_genre}, #{book_writeType}, #{book_intro}, #{book_state}, #{book_isHidden}, now(), #{book_imgName}, #{book_imgUrl}, #{book_imgThumbUrl}, #{book_imgUuid})
+</insert>
+<select id="read" resultType="com.gyull.cookivel.domain.book.BookVO">
+SELECT member_idx, book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_state, book_isHidden, book_regDate, book_recentDate, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgThumbUrl, book_imgUuid
+FROM book 
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx};
+</select>
+<update id="modify">
+UPDATE book
+SET
+book_title = #{book_title},
+book_writer = #{book_writer},
+book_genre = #{book_genre},
+book_writeType = #{book_writeType},
+book_intro = #{book_intro},
+book_state = #{book_state},
+book_isHidden = #{book_isHidden}
+WHERE book_idx = #{book_idx}
+</update>
+<update id="modifyCover">
+UPDATE book
+SET
+book_imgName = #{book_imgName},
+book_imgUrl = #{book_imgUrl}, 
+book_imgThumbUrl = #{book_imgThumbUrl}, 
+book_imgUuid = #{book_imgUuid}
+WHERE book_idx = #{book_idx}
+</update>
+<delete id="delete">
+DELETE FROM book
+WHERE book_idx = #{book_idx}
+</delete>
+<select id="getOldBookCover" resultType="com.gyull.cookivel.domain.book.BookVO">
+SELECT *
+FROM book
+WHERE book_imgUrl = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y\%m\%d')
+</select>
+<update id="bookChapterUpdate" parameterType="int">
+UPDATE book
+SET
+book_chapters = IFNULL((SELECT count(*) FROM book_chapter WHERE book_idx = #{book_idx} and chapter_category = '연재'),0),
+book_recentDate = now()
+WHERE book_idx = #{book_idx}
+</update>
+<update id="bookChaptersUp" parameterType="int">
+UPDATE book
+SET
+book_chapters = book_chapters + 1
+WHERE book_idx = #{book_idx}
+</update>
+<update id="bookChaptersDown" parameterType="int">
+UPDATE book
+SET
+book_chapters = book_chapters - 1
+WHERE book_idx = #{book_idx}
+</update>
+</mapper>

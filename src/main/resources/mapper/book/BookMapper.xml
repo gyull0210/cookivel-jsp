@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.book.BookMapper">
+<select id="bookInfo" resultType="com.gyull.cookivel.domain.book.BookVO">
+SELECT book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_state, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgthumbUrl, book_imgUuid 
+FROM book
+WHERE book_idx = #{book_idx}
+</select>
+<select id="getFirstChapter" resultType="int">
+SELECT IFNULL(min(chapter_idx), 0)
+FROM book_chapter
+WHERE book_idx = #{book_idx} and chapter_category= '연재'
+ORDER BY chapter_idx LIMIT 1;
+</select>
+<select id="chapterNotice" resultType="com.gyull.cookivel.domain.book.BookChapterVO">
+SELECT chapter_idx, book_idx, book_title, chapter_category, chapter_title, chapter_content, chapter_regDate, chapter_views, chapter_rating, chapter_comments
+FROM book_chapter
+WHERE book_idx = #{book_idx} and chapter_category = '공지'
+ORDER BY chapter_idx DESC
+</select>
+<select id="totalCount" resultType="int">
+select count(*)
+from book_chapter
+where book_idx = #{book_idx} and chapter_category = '연재' and chapter_idx > 0
+</select>
+<select id="totalNoticeCount" resultType="int">
+select count(*)
+from book_chapter
+where book_idx = #{book_idx} and chapter_category = '공지' and chapter_idx > 0
+</select>
+<select id="pagination" resultType="com.gyull.cookivel.domain.book.BookChapterVO">
+<![CDATA[
+SELECT chapter_idx, book_idx, book_title, chapter_category, chapter_title, chapter_regDate, chapter_views, chapter_rating, chapter_comments
+FROM book_chapter
+WHERE book_idx = #{book_idx} and chapter_category = '연재'
+ORDER BY
+]]>
+<choose>
+	<when test="chapter_sort  == 'asc'">chapter_idx ASC</when>
+	<when test="chapter_sort  == 'desc'">chapter_idx DESC</when>
+	<otherwise>chapter_idx DESC</otherwise>
+</choose>
+<![CDATA[
+limit #{skip}, #{amount};
+]]>
+</select>
+<update id="updateViews">
+UPDATE book
+SET
+book_views = (SELECT SUM(chapter_views) FROM book_chapter WHERE book_idx = #{book_idx})
+WHERE book_idx = #{book_idx}
+</update>
+<update id="updateRating">
+UPDATE book
+SET
+book_rating = (SELECT AVG(chapter_rating) FROM book_chapter WHERE book_idx = #{book_idx})
+WHERE book_idx = #{book_idx}
+</update>
+<select id="totalRatingCount">
+SELECT count(*)
+FROM book_rating
+WHERE book_idx = #{book_idx}
+</select>
+</mapper>

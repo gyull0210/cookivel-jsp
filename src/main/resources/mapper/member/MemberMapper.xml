@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.member.MemberMapper">
+<resultMap type="com.gyull.cookivel.domain.member.MemberVO" id="memberMap">
+<id property="member_idx" column="member_idx" />
+<result property="mem_email" column="mem_email"/>
+<result property="mem_pw" column="mem_pw"/>
+<result property="mem_nickName" column="mem_nickName"/>
+<result property="mem_regDate" column="mem_regDate"/>
+<result property="mem_recentDate" column="mem_recentDate"/>
+<collection property="authList" resultMap="memberCodeMap" />
+<collection property="profileList" resultMap="memberImgMap" />
+</resultMap>
+<resultMap type="com.gyull.cookivel.domain.member.MemberCodeVO" id="memberCodeMap">
+<result property="member_idx" column="member_idx"/>
+<result property="mem_codeNum" column="mem_codeNum"/>
+<result property="mem_codeName" column="mem_codeName" />
+</resultMap>
+<resultMap type="com.gyull.cookivel.domain.member.MemberImageVO" id="memberImgMap">
+<result property="member_idx" column="member_idx"/>
+<result property="mem_imgName" column="mem_imgName" />
+<result property="mem_imgUrl" column="mem_imgUrl" /> 
+</resultMap>
+<select id="read" resultMap="memberMap">
+SELECT mem.member_idx, mem_email, mem_pw, mem_nickName, mem_regDate, mem_recentDate, mem_codeName, mem_imgName, mem_imgUrl
+FROM member mem
+LEFT JOIN member_code memAuth on mem.member_idx = memAuth.member_idx
+LEFT OUTER JOIN member_image memImg on mem.member_idx = memImg.member_idx
+WHERE mem.mem_email = #{mem_email}
+</select>
+<select id="getAccount" resultMap="memberMap">
+SELECT mem.member_idx, mem_email, mem_pw, mem_nickName, mem_regDate, mem_recentDate, mem_codeName
+FROM member mem
+LEFT JOIN member_code memAuth on mem.member_idx = memAuth.member_idx
+WHERE mem.mem_nickName = #{mem_nickName}
+</select>
+<select id="accountCount" resultType="com.gyull.cookivel.domain.member.MemberVO">
+SELECT member_idx, mem_email, mem_pw, mem_nickName, mem_regDate, mem_recentDate
+FROM member
+WHERE mem_nickName = #{mem_nickName}
+</select>
+<insert id="register">
+INSERT INTO member
+(mem_email, mem_pw, mem_nickName, mem_phoneNum, mem_regDate)
+VALUES( #{mem_email}, #{mem_pw}, #{mem_nickName}, #{mem_phoneNum}, now())
+</insert>
+</mapper>

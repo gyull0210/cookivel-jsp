@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.freeseries.FreeSeriesMapper">
+<select id="totalCount" resultType="int">
+<![CDATA[
+select count(*)
+from book
+where book_idx > 0 and book_state = '연재중'
+]]>
+<choose>
+	<when test="genre != null and genre != ''">
+	and book_genre = #{genre}
+	</when>
+	<otherwise></otherwise>
+</choose>
+</select>
+<select id="finishedCount" resultType="int">
+<![CDATA[
+select count(*)
+from book
+where book_idx > 0 and book_state = '완결됨'
+]]>
+<choose>
+	<when test="genre != null and genre != ''">
+	and book_genre = #{genre}
+	</when>
+	<otherwise></otherwise>
+</choose>
+</select>
+<select id="pagination" resultType="com.gyull.cookivel.domain.book.BookVO">
+<![CDATA[
+SELECT book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_regDate, book_recentDate, book_state, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgthumbUrl, book_imgUuid 
+FROM book
+WHERE book_writeType = 'free' AND book_state = '연재중'
+]]>
+<choose>
+	<when test="genre =='판타지'">
+		AND book_genre = '판타지'
+	</when>
+	<when test="genre =='현대판타지'">
+		AND book_genre = '현대판타지'
+	</when>
+	<when test="genre =='무협'">
+		AND book_genre = '무협'
+	</when>
+	<when test="genre =='로맨스'">
+		AND book_genre = '로맨스'
+	</when>
+	<when test="genre =='로맨스판타지'">
+		AND book_genre = '로맨스판타지'
+	</when>
+	<when test="genre =='BL'">
+		AND book_genre = 'BL'
+	</when>
+	<when test="genre =='GL'">
+		AND book_genre = 'GL'
+	</when>
+	<otherwise></otherwise>
+</choose>
+<![CDATA[
+ORDER BY
+]]>
+<choose>
+	<when test="sort == 'recent'">book_regDate desc</when>
+	<when test="sort == 'update'">book_recentDate desc</when>
+	<when test="sort == 'views'">book_views desc</when>
+	<when test="sort == 'rating'">book_rating desc</when>
+	<when test="sort == null or sort == ''">book_recentDate desc</when>
+	<otherwise>book_recentDate desc</otherwise>
+</choose>
+<![CDATA[
+limit #{skip}, #{amount};
+]]>
+</select>
+<select id="finishedPagination" resultType="com.gyull.cookivel.domain.book.BookVO">
+<![CDATA[
+SELECT book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_regDate, book_recentDate, book_state, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgthumbUrl, book_imgUuid 
+FROM book
+]]>
+WHERE book_writeType = 'free' AND book_state = '완결됨'
+<choose>
+	<when test="genre =='판타지'">
+		AND book_genre = '판타지'
+	</when>
+	<when test="genre =='현대판타지'">
+		AND book_genre = '현대판타지'
+	</when>
+	<when test="genre =='무협'">
+		AND book_genre = '무협'
+	</when>
+	<when test="genre =='로맨스'">
+		AND book_genre = '로맨스'
+	</when>
+	<when test="genre =='로맨스판타지'">
+		AND book_genre = '로맨스판타지'
+	</when>
+	<when test="genre =='BL'">
+		AND book_genre = 'BL'
+	</when>
+	<when test="genre =='GL'">
+		AND book_genre = 'GL'
+	</when>
+	<otherwise>
+	</otherwise>
+</choose>
+<!-- <![CDATA[
+ORDER BY
+]]> -->
+<!-- <choose>
+	<when test="sort == 'recent'">book_regDate desc</when>
+	<when test="sort == 'update'">book_recentDate desc</when>
+	<when test="sort == 'views'">book_views desc</when>
+	<when test="sort == 'rating'">book_rating desc</when>
+	<otherwise>book_recentDate desc</otherwise>
+</choose> -->
+<![CDATA[
+limit #{skip}, #{amount};
+]]>
+</select>
+<select id="paging" resultType="com.gyull.cookivel.domain.book.BookVO">
+
+SELECT book_idx, book_title, book_writer, book_genre, book_writeType, book_chapters, book_intro, book_regDate, book_recentDate, book_state, book_views, book_rating, book_comments, book_imgName, book_imgUrl, book_imgthumbUrl, book_imgUuid 
+FROM book
+WHERE book_writeType = 'free' AND book_state = '연재중'
+
+limit #{skip}, #{amount}
+</select>
+<select id="count" resultType="int">
+select count(*)
+from book
+where book_idx > 0 and book_state = '연재중'
+</select>
+</mapper>

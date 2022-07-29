@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.gyull.cookivel.mapper.bookshelf.BookShelfMapper">
+<select id="totalSubscribeCount" resultType="int">
+select count(*)
+from book_subscribe
+where member_idx = #{member_idx}
+</select>
+<select id="getSubscribeListPaging" resultType="com.gyull.cookivel.domain.book.BookVO">
+<![CDATA[
+SELECT a.book_idx, b.book_title, b.book_genre, b.book_writeType, b.book_writer, b.book_chapters, b.book_intro, b.book_regDate, b.book_state, b.book_imgName, b.book_imgUrl
+FROM book_subscribe a
+INNER JOIN book b
+ON a.book_idx = b.book_idx
+WHERE a.member_idx = #{member_idx}
+ORDER BY
+]]>
+<choose>
+	<when test="sort  == 'asc'">a.book_idx ASC</when>
+	<when test="sort  == 'desc'">a.book_idx DESC</when>
+	<when test="sort  == 'updated'">b.book_regDate DESC</when>
+	<otherwise>a.book_idx DESC</otherwise>
+</choose>
+<![CDATA[
+limit #{skip}, #{amount};
+]]>
+</select>
+<select id="readSubscribe" resultType="int">
+SELECT IFNULL(count(*),0)
+FROM book_subscribe
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx}
+</select>
+<insert id="insertSubscribe">
+INSERT INTO book_subscribe(member_idx, book_idx)
+VALUES(#{member_idx}, #{book_idx})
+</insert>
+<delete id="deleteSubscribe">
+DELETE FROM book_subscribe
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx}
+</delete>
+<select id="totalHistory">
+SELECT count(*)
+FROM book_chapter_recent
+WHERE member_idx = #{member_idx}
+</select>
+<select id="getHistoryListPaging" resultType="com.gyull.cookivel.domain.book.BookHistoryVO">
+SELECT a.book_idx, a.chapter_idx, a.chapter_title, a.recent_regDate, b.book_title, b.book_genre, b.book_writeType, b.book_chapters, b.book_intro, b.book_regDate, b.book_state, b.book_imgName, b.book_imgUrl
+FROM book_chapter_recent a
+INNER JOIN book b
+ON a.book_idx = b.book_idx
+WHERE a.member_idx = #{member_idx}
+ORDER BY recent_regDate DESC
+<![CDATA[
+limit #{skip}, #{amount};
+]]>
+</select>
+<select id="readHistory" resultType="int">
+SELECT count(*)
+FROM book_chapter_recent
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx}
+</select>
+<insert id="insertHistory">
+INSERT INTO book_chapter_recent(member_idx, book_idx, chapter_idx, chapter_title, recent_regDate)
+VALUES(#{member_idx}, #{book_idx}, #{chapter_idx}, #{chapter_title}, now())
+</insert>
+<update id="updateHistory">
+UPDATE book_chapter_recent
+SET
+chapter_idx = #{chapter_idx},
+chapter_title = #{chapter_title},
+recent_regDate = now()
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx}
+</update>
+<delete id="deleteHistory">
+DELETE FROM book_chapter_recent
+WHERE member_idx = #{member_idx} and book_idx = #{book_idx}
+</delete>
+</mapper>
